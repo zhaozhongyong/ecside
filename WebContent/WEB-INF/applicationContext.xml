@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN 2.0//EN" "http://www.springframework.org/dtd/spring-beans-2.0.dtd">
+<beans>
+<!--
+
+-->
+    <bean id="myEasyDA" class="demo.MyDataAccessModel">
+		<property name="dataSource" ref="test_datasource" />
+        <property name="sqls">
+            <map>
+                <entry key="updateUser" >
+					<value>
+						update user_info set 
+						passwd=#{PASSWD} , 
+						userrole=#{USERROLE} ,
+						email=#{EMAIL}, 
+						gender=#{GENDER} 
+						where userid=#{USERID}
+					</value>
+				</entry>
+                <entry key="deleteUser" >
+					<value>
+						delete from user_info 
+						where userid=#{USERID}
+					</value>
+				</entry>
+                <entry key="addUser" >
+					<value>
+						insert into user_info (username,passwd,userrole,regdate,email,gender,memo) 
+						values( #{USERNAME},#{PASSWD},#{USERROLE},#{REGDATE},#{EMAIL},#{GENDER},#{MEMO} )
+					</value>
+				</entry>
+                <entry key="getUserMemo" >
+					<value>
+						select MEMO,EMAIL
+						from user_info where userid=#{USERID}
+					</value>
+				</entry>
+            </map>
+        </property>
+    </bean>
+
+
+
+	<bean id="userInfoDAO" class="demo.classic.dao.UserInfoDAO">
+		<property name="dataSource" ref="test_datasource" />
+	</bean>
+
+
+	<bean id="userInfoList" class="org.ecside.easylist.DefaultEasyListModel">
+		<property name="dataSource" ref="test_datasource" />
+		<property name="defaultPageSize">
+			<value>20</value>
+		</property>
+		<property name="sqlSelect">
+			<value>
+				select limit #{ROW_START} #{PAGE_SIZE} * from user_info 
+				where 1=1 
+				#{IF:USERNAME!=EMPTY} and username like #{USERNAME} #{/IF}
+				#{IF:PASSWD!=EMPTY} and passwd=#{PASSWD} #{/IF}
+				#{IF:USERROLE!=EMPTY} and userrole=#{USERROLE} #{/IF}
+				#{IF:GENDER!=EMPTY} and gender=#{GENDER} #{/IF}
+			</value>
+		</property>
+		<property name="sqlSelectNum">
+			<value>
+				select count(userid) from user_info 
+				where 1=1
+				#{IF:USERNAME!=EMPTY} and username like #{USERNAME} #{/IF}
+				#{IF:PASSWD!=EMPTY} and passwd=#{PASSWD} #{/IF}
+				#{IF:USERROLE!=EMPTY} and userrole=#{USERROLE} #{/IF}
+				#{IF:GENDER!=EMPTY} and gender=#{GENDER} #{/IF}
+			</value>
+		</property>
+	</bean>
+
+
+<!-- 在spring中配制的数据源 
+	H2DB :   {root} =  servletContext.getRealPath("/")
+			<property name="url">
+			<value>jdbc:h2:file:{root}db/testdb</value>
+		</property>
+
+				<property name="url">
+			<value>jdbc:h2:tcp://localhost/testdb</value>
+		</property>
+-->
+		<bean id="test_datasource" class="org.ecside.common.H2DriverManagerDataSource">
+		<property name="driverClassName" value="org.h2.Driver" />
+			<property name="url">
+			<value>jdbc:h2:file:{root}db/testdb</value>
+		</property>
+		<property name="username" value="sa" />
+		<property name="password" value="" />
+		<property name="autoReset" value="true" />
+		<property name="defaultDB" >
+			<value>{root}db/default/testdb</value>
+		</property>
+	</bean>
+
+
+
+</beans>
